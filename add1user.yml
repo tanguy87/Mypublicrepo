@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: yes
+  vars_prompt:
+    - name: user_name
+      prompt: What is the user name of the user you want to add?
+      private: no
+
+    - name: comment
+      prompt: Add any comment you will like to add to this user. Ex full name; email; etc.
+      private: no
+
+    - name: user_pass
+      prompt: what is the password you want to set for this user?
+      private: yes
+      confirm: yes
+
+  tasks:
+  - name: check if the user exist on the server
+    getent:
+      database: passwd
+      key: "{{ user_name }}"
+    ignore_errors: yes
+    register: check_result 
+
+  - name: Display the check result
+    debug:
+      var: check_result
+
+  - name: add the user to the server
+    user:
+      name: "{{ user_name }}"
+      comment: "{{ comment | default('N/A') }}"
+      password: "{{ user_pass | password_hash('sha512') }}"
+      update_password: on_create
