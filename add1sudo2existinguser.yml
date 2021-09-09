@@ -1,0 +1,41 @@
+# This playbook will help add an existing user on unix server to the sudoers file while validating to ensure no errors
+#How to run this playbook:
+# ansible-playbook -i yourinventoryfilenamehere add1sudo2existinguser.yml ===>>This is for when you have multiple host 
+# or ansible-playbook all -i serverip(or hostname), add1sudo2existinguser.yml ====>> This is for 1 host
+# answer the question prompted by the playbook and you are all set.
+---
+- hosts: all
+  become: yes
+  vars_prompt:
+    - name: user_name
+      prompt: What is the user name of the user you want to add to the sudoers file?
+      private: no
+      confirm: yes
+
+
+    - name: permission
+      prompt: what is the permission you want to give to this user?
+      private: no
+      confirm: yes
+
+  tasks:
+  - name: check if the user exist on the server
+    getent:
+      database: passwd
+      key: "{{ user_name }}"
+    ignore_errors: yes
+    register: check_result 
+
+  - name: Display the check result
+    debug:
+      var: check_result
+
+  - name: add the user to the sudoers file
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      line: "{{ user_name }}   {{ permission }}" 
+      insertafter: EOF
+      validate: '/usr/sbin/visudo -cf %s'
+    when: check_result.failed == false
+ 
