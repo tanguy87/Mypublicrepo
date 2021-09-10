@@ -1,3 +1,10 @@
+# This playbook will help add an existing user on unix server to the sudoers file while validating to ensure no errors
+#How to run this playbook:
+# ansible-playbook -i yourinventoryfilenamehere add1user.yml ===>>This is for when you have multiple host 
+# or ansible-playbook all -i serverip(or hostname), add1user.yml ====>> This is for 1 host
+# answer the question prompted by the playbook and you are all set.
+##Note: If you have ansible tower and want to incorporate this as template; you can use the survey section to take care of the "prompt variables" If you have question feel free to ask in the comment section.
+
 ---
 - hosts: all
   become: yes
@@ -14,6 +21,12 @@
       prompt: what is the password you want to set for this user?
       private: yes
       confirm: yes
+
+    - name: force_pass_reset
+      prompt: Do you want to force the user to reset hist password? ("answer- yes/no")
+      private: no
+      confirm: yes
+
 
   tasks:
   - name: check if the user exist on the server
@@ -33,3 +46,7 @@
       comment: "{{ comment | default('N/A') }}"
       password: "{{ user_pass | password_hash('sha512') }}"
       update_password: on_create
+
+  - name: Force the user to replace his password 
+    shell: chage -d 0 "{{ user_name }}"
+    when: force_pass_reset == "yes"
