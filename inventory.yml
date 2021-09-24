@@ -1,0 +1,7 @@
+---
+group1:
+  hosts:
+    Ex447_server-1:
+      ansible_host: 172.31.99.75
+    Ex447_server-2:
+      ansible_host: 172.31.101.244
