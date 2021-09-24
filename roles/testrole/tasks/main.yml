@@ -1,0 +1,3 @@
+---
+- name: check a file contenet
+  shell: tail /etc/passwd
